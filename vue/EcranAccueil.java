@@ -53,38 +53,142 @@ public class EcranAccueil extends JFrame {
             afficherConfirmation(quantite, stockRestant);
         });
 
+        setPreferredSize(new Dimension(520, 560));
+
         pack();
+
+        setMinimumSize(new Dimension(480, 520));
+
         setLocationRelativeTo(null);
     }
 
     /** Place les composants : en-tête, infos produit, sélecteur de quantité, bouton, confirmation. */
     private void construireInterface() {
+
         JLabel titre = new JLabel("FRENCH CHIC", SwingConstants.CENTER);
-        titre.setFont(titre.getFont().deriveFont(Font.BOLD, 24f));
+        titre.setFont(new Font("SansSerif", Font.BOLD, 26));
+        titre.setForeground(Color.WHITE);
         titre.setOpaque(true);
-        titre.setBackground(Color.GRAY);
-        titre.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        titre.setBackground(new Color(31, 42, 68));
+        titre.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
 
-        libelleLabel.setFont(libelleLabel.getFont().deriveFont(Font.BOLD));
-        prixLabel.setForeground(new Color(0, 128, 0));
-        confirmationLabel.setForeground(new Color(0, 100, 0));
+        libelleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        libelleLabel.setForeground(new Color(31, 42, 68));
+        prixLabel.setFont(new Font("SansSerif", Font.BOLD, 28));
+        prixLabel.setForeground(new Color(39, 105, 75));
+        stockLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        stockLabel.setForeground(new Color(90, 95, 100));
+        confirmationLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        confirmationLabel.setForeground(new Color(39, 105, 75));
 
-        JPanel selecteur = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        selecteur.add(new JLabel("Quantité :"));
+        JPanel selecteur = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 5));
+        selecteur.setBackground(Color.WHITE);
+        JLabel texteQuantite = new JLabel("Quantité :");
+        texteQuantite.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        selecteur.add(texteQuantite);
+        // Bouton moins
+        moinsBouton.setText("-");
+        moinsBouton.setFont(new Font("SansSerif", Font.BOLD, 22));
+        moinsBouton.setForeground(new Color(31, 42, 68));
+        moinsBouton.setBackground(new Color(31, 42, 68));
+        moinsBouton.setForeground(Color.WHITE);
+        moinsBouton.setPreferredSize(new Dimension(42, 42));
+        moinsBouton.setFocusPainted(false);
+        moinsBouton.setBorderPainted(false);
+        moinsBouton.setContentAreaFilled(true);
+        moinsBouton.setOpaque(true);
+        moinsBouton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        // Quantité
+        quantiteLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+        quantiteLabel.setForeground(new Color(31, 42, 68));
+        quantiteLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        quantiteLabel.setPreferredSize(new Dimension(35, 42));
+        // Bouton plus
+        plusBouton.setText("+");
+        plusBouton.setFont(new Font("DejaVu Sans", Font.BOLD, 22));
+        plusBouton.setForeground(Color.WHITE);
+        plusBouton.setBackground(new Color(31, 42, 68));
+        plusBouton.setPreferredSize(new Dimension(42, 42));
+        plusBouton.setBorder(BorderFactory.createEmptyBorder());
+        plusBouton.setBorderPainted(false);
+        plusBouton.setFocusPainted(false);
+        plusBouton.setContentAreaFilled(true);
+        plusBouton.setOpaque(true);
+        plusBouton.setFont(new Font("SansSerif", Font.BOLD, 22));
+        plusBouton.setForeground(Color.WHITE);
+        plusBouton.setBackground(new Color(31, 42, 68));
+        plusBouton.setPreferredSize(new Dimension(42, 42));
+        plusBouton.setFocusPainted(false);
+        plusBouton.setBorderPainted(false);
+        plusBouton.setContentAreaFilled(true);
+        plusBouton.setOpaque(true);
+        plusBouton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         selecteur.add(moinsBouton);
         selecteur.add(quantiteLabel);
+        acheterBouton.setText("Acheter maintenant");
+
+        acheterBouton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        acheterBouton.setForeground(Color.WHITE);
+        acheterBouton.setBackground(new Color(31, 42, 68));
+        acheterBouton.setPreferredSize(
+            new Dimension(280, 48)
+        );
+        acheterBouton.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 48)
+        );
+        acheterBouton.setFocusPainted(false);
+        acheterBouton.setBorder(
+            BorderFactory.createEmptyBorder(12, 20, 12, 20)
+        );
+        acheterBouton.setAlignmentX(Component.LEFT_ALIGNMENT);
         selecteur.add(plusBouton);
+
 
         JPanel contenu = new JPanel();
         contenu.setLayout(new BoxLayout(contenu, BoxLayout.Y_AXIS));
-        contenu.setBorder(BorderFactory.createEmptyBorder(10, 15, 15, 15));
-        for (JComponent c : new JComponent[] {
-                new JLabel("Produit du jour"), libelleLabel, prixLabel, stockLabel,
-                selecteur, acheterBouton, confirmationLabel }) {
+        contenu.setBackground(new Color(245, 242, 236));
+        contenu.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
+        JPanel carteProduit = new JPanel();
+        carteProduit.setLayout(new BoxLayout(carteProduit, BoxLayout.Y_AXIS));
+        carteProduit.setBackground(Color.WHITE);
+        carteProduit.setBorder(
+            BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(
+                    new Color(225, 222, 216)
+                ),
+                BorderFactory.createEmptyBorder(25, 25, 25, 25)
+            )
+        );
+        JLabel sousTitre = new JLabel("PRODUIT DU JOUR");
+
+        sousTitre.setFont(
+            new Font("SansSerif", Font.BOLD, 12)
+        );
+
+        sousTitre.setForeground(
+            new Color(120, 115, 105)
+        );
+
+        JComponent[] composants = {
+            sousTitre,
+            libelleLabel,
+            prixLabel,
+            stockLabel,
+            selecteur,
+            acheterBouton,
+            confirmationLabel
+        };
+
+        for (JComponent c : composants) {
             c.setAlignmentX(Component.LEFT_ALIGNMENT);
-            contenu.add(c);
-            contenu.add(Box.createVerticalStrut(6));
+
+            carteProduit.add(c);
+
+            carteProduit.add(
+                Box.createVerticalStrut(12)
+            );
         }
+        contenu.add(carteProduit);
 
         setLayout(new BorderLayout());
         add(titre, BorderLayout.NORTH);
