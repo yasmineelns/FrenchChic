@@ -6,6 +6,15 @@ package frenchchic.metier;
  */
 public class Produit {
 
+    // --- Exception métier (classe imbriquée) ---
+
+    /** Levée quand la quantité demandée dépasse le stock disponible. */
+    public static class StockInsuffisantException extends Exception {
+        public StockInsuffisantException(int demandee, int disponible) {
+            super("Stock insuffisant : " + demandee + " demandé(s), "
+                  + disponible + " disponible(s).");
+        }
+    }
     // --- Attributs ---
 
     
@@ -32,6 +41,7 @@ public class Produit {
         this.quantiteStock = quantiteStock;
     }
 
+
     // --- Accesseurs (getters) ---
 
     
@@ -53,10 +63,15 @@ public class Produit {
 
     /**
      * Décrémente le stock du produit de la quantité achetée.
-     * Ne fait rien si la quantité demandée dépasse le stock disponible./**
-     * Retourne le prix du produit.
+     *
+     * @param quantite nombre d'exemplaires achetés
+     * @throws StockInsuffisantException si la quantité dépasse le stock disponible
      */
-    public void decrementerStock(int quantite) {
+    public void decrementerStock(int quantite) throws StockInsuffisantException {
+        if (quantite > this.quantiteStock) {
+            throw new StockInsuffisantException(quantite, this.quantiteStock);
+        }
         this.quantiteStock -= quantite;
     }
 }
+

@@ -2,3 +2,4 @@ out/
 *.class
 .vscode/
 .idea/
+.DS_Store # évite de committer ce fichier parasite de macOS

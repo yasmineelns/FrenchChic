@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.util.Locale;
+import frenchchic.metier.Produit.StockInsuffisantException;
 
 /**
  * Écran d'accueil du CU "Passer commande en ligne".
@@ -49,9 +50,13 @@ public class EcranAccueil extends JFrame {
         moinsBouton.addActionListener(e -> changerQuantite(-1));
         plusBouton.addActionListener(e -> changerQuantite(+1));
         acheterBouton.addActionListener(e -> {
-            int stockRestant = session.acheter(quantite);
-            afficherConfirmation(quantite, stockRestant);
-        });
+    try {
+        int stockRestant = session.acheter(quantite);
+        afficherConfirmation(quantite, stockRestant);
+    } catch (StockInsuffisantException ex) {
+        afficherErreur(ex.getMessage());
+    }
+});
 
         setPreferredSize(new Dimension(520, 560));
 
@@ -213,6 +218,12 @@ public class EcranAccueil extends JFrame {
         prixLabel.setText(formaterPrix(prix));
         stockLabel.setText("Stock disponible : " + stock);
     }
+    /** Affiche un message d'erreur en rouge à la place de la confirmation. */
+    public void afficherErreur(String message) {
+        confirmationLabel.setForeground(new Color(180, 40, 40));
+        confirmationLabel.setText(message);
+}
+    
 
     /**
      * Affiche la confirmation d'achat et met à jour le stock sur le même écran.
@@ -221,10 +232,11 @@ public class EcranAccueil extends JFrame {
      * @param stockRestant le stock restant après l'achat
      */
     public void afficherConfirmation(int quantite, int stockRestant) {
-        stockLabel.setText("Stock restant : " + stockRestant);
-        String exemplaires = quantite > 1 ? " exemplaires achetés" : " exemplaire acheté";
-        confirmationLabel.setText("Achat confirmé : " + quantite + exemplaires);
-    }
+    confirmationLabel.setForeground(new Color(39, 105, 75));
+    stockLabel.setText("Stock restant : " + stockRestant);
+    String exemplaires = quantite > 1 ? " exemplaires achetés" : " exemplaire acheté";
+    confirmationLabel.setText("Achat confirmé : " + quantite + exemplaires);
+}
 
     /** Formate un prix à la française, ex. 49.9 -> "49,90 €". */
     private static String formaterPrix(double prix) {

@@ -1,7 +1,7 @@
 package frenchchic.controleur;
 
 import frenchchic.metier.Produit;
-
+import frenchchic.metier.Produit.StockInsuffisantException;
 
 public class SessionPasserCommande {
 
@@ -31,8 +31,9 @@ public class SessionPasserCommande {
      *
      * @param quantite nombre d'exemplaires choisis par le client
      * @return le stock restant après l'achat
+     * @throws StockInsuffisantException si la quantité dépasse le stock
      */
-    public int acheter(int quantite) {
+    public int acheter(int quantite) throws StockInsuffisantException {
         produit.decrementerStock(quantite);
         return produit.getQuantiteStock();
     }
