@@ -18,11 +18,13 @@ public class Main {
         Produit produitDuJour = new Produit("Robe d'été fleurie", 49.90, 12);
 
         SessionPasserCommande session = new SessionPasserCommande(produitDuJour);
-
+"""
         // Swing doit être manipulé depuis le thread d'événements (EDT).
         SwingUtilities.invokeLater(() -> {
             EcranAccueil ecran = new EcranAccueil(session);
             ecran.setVisible(true);
         });
+        """
+        
     }
 }
