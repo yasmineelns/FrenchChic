@@ -1,12 +1,15 @@
 package frenchchic.controleur;
 
 import frenchchic.metier.Produit;
-
+import frenchchic.metier.Panier;
 
 public class SessionPasserCommande {
 
     /** Le produit du jour, déjà défini quand le client accède à l'application. */
     private final Produit produit;
+
+    /** Le panier temporaire du client. */
+    private final Panier panier = new Panier();
 
     /** Informations renvoyées à la vue : libellé, prix, stock. */
     public record InfosProduit(String libelle, double prix, int stock) { }
@@ -23,6 +26,20 @@ public class SessionPasserCommande {
         double prix = produit.getPrix();
         int stock = produit.getQuantiteStock();
         return new InfosProduit(libelle, prix, stock);
+    }
+
+    /**
+     * Ajoute une quantité du produit du jour au panier.
+     */
+    public void ajouterAuPanier(int quantite) {
+        panier.ajouterProduit(produit, quantite);
+    }
+
+    /**
+     * Renvoie le panier actuel.
+     */
+    public Panier getPanier() {
+        return panier;
     }
 
     /**
