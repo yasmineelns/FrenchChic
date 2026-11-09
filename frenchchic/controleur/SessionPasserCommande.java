@@ -1,11 +1,9 @@
 package frenchchic.controleur;
 
 import frenchchic.metier.Produit;
-<<<<<<< HEAD:controleur/SessionPasserCommande.java
 import frenchchic.metier.Panier;
-=======
 import frenchchic.metier.Produit.StockInsuffisantException;
->>>>>>> 08071ed7b292b36b9299dd856de96d0b0e5abbea:frenchchic/controleur/SessionPasserCommande.java
+
 
 public class SessionPasserCommande {
 
