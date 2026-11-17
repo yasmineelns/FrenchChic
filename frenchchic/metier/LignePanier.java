@@ -2,7 +2,7 @@ package frenchchic.metier;
 
 public class LignePanier {
 
-    private Produit produit;
+    private final Produit produit;
     private int quantite;
 
     public LignePanier(Produit produit, int quantite) {
@@ -22,7 +22,13 @@ public class LignePanier {
         this.quantite = quantite;
     }
 
-    public double calculerSousTotal() {
+    // Méthode du Lot 1
+    public double getSousTotal() {
         return produit.getPrix() * quantite;
+    }
+
+    // Compatibilité avec l'ancien FrenchChic
+    public double calculerSousTotal() {
+        return getSousTotal();
     }
 }

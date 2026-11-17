@@ -5,24 +5,17 @@ import java.util.List;
 
 public class Panier {
 
-    private List<LignePanier> lignes;
+    private final List<LignePanier> lignes = new ArrayList<>();;
 
-    public Panier() {
-        this.lignes = new ArrayList<>();
-    }
 
-    public List<LignePanier> getLignes() {
-        return lignes;
-    }
 
-    public void ajouterProduit(Produit produit, int quantite) {
+    public void ajouterLigne(Produit produit, int quantite) {
         for (LignePanier ligne : lignes) {
             if (ligne.getProduit() == produit) {
                 ligne.setQuantite(ligne.getQuantite() + quantite);
                 return;
             }
         }
-
         lignes.add(new LignePanier(produit, quantite));
     }
 
@@ -43,13 +36,29 @@ public class Panier {
         lignes.clear();
     }
 
-    public double calculerTotal() {
+    /** @return les lignes du panier */
+    public List<LignePanier> getLignes() {
+        return lignes;
+    }
+
+    /** @return le total du panier : somme des sous-totaux des lignes */
+    public double getTotal() {
         double total = 0;
-
         for (LignePanier ligne : lignes) {
-            total += ligne.calculerSousTotal();
+            total += ligne.getSousTotal();
         }
-
         return total;
+    }
+
+    /**
+     * @return le nombre d'articles du panier : somme des quantités de toutes
+     *         les lignes (affiché dans le bouton « Panier (n) »)
+     */
+    public int getNombreArticles() {
+        int nombre = 0;
+        for (LignePanier ligne : lignes) {
+            nombre += ligne.getQuantite();
+        }
+        return nombre;
     }
 }

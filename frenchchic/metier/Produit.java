@@ -1,77 +1,76 @@
 package frenchchic.metier;
 
 /**
- * Représente le produit du jour et ses informations métier.
- * Gère notamment la diminution de la quantité en stock après un achat.
+ * Représente un produit du catalogue et ses informations métier :
+ * libellé, prix et quantité en stock.
+ *
+ * <p>Gère notamment la vérification d'une quantité demandée et la diminution
+ * du stock à la confirmation de la commande.
  */
 public class Produit {
 
-    // --- Exception métier (classe imbriquée) ---
+    /** Nom du produit. */
+    private final String libelle;
 
-    /** Levée quand la quantité demandée dépasse le stock disponible. */
-    public static class StockInsuffisantException extends Exception {
-        public StockInsuffisantException(int demandee, int disponible) {
-            super("Stock insuffisant : " + demandee + " demandé(s), "
-                  + disponible + " disponible(s).");
-        }
-    }
-    // --- Attributs ---
+    /** Prix unitaire en euros. */
+    private final double prix;
 
-    
-    private String libelle;
-
-    
-    private double prix;
-
-    
+    /** Quantité actuellement disponible en stock. */
     private int quantiteStock;
 
-    // --- Constructeur ---
-
     /**
-     * Crée un produit avec son libellé, son prix et sa quantité en stock.
+     * Crée un produit.
      *
      * @param libelle       le nom du produit
      * @param prix          le prix unitaire
      * @param quantiteStock la quantité disponible en stock
      */
     public Produit(String libelle, double prix, int quantiteStock) {
-        this.libelle       = libelle;
-        this.prix          = prix;
+        this.libelle = libelle;
+        this.prix = prix;
         this.quantiteStock = quantiteStock;
     }
 
-
-    // --- Accesseurs (getters) ---
-
-    
+    /** @return le nom du produit */
     public String getLibelle() {
         return libelle;
     }
 
-    
+    /** @return le prix unitaire */
     public double getPrix() {
         return prix;
     }
 
-    
+    /** @return la quantité disponible en stock */
     public int getQuantiteStock() {
         return quantiteStock;
     }
 
-    // --- Méthode métier ---
-
     /**
-     * Décrémente le stock du produit de la quantité achetée.
+     * Vérifie que la quantité demandée est disponible en stock.
+     * Ne modifie pas le stock.
      *
-     * @param quantite nombre d'exemplaires achetés
+     * @param quantite la quantité demandée par le client
      * @throws StockInsuffisantException si la quantité dépasse le stock disponible
      */
-    public void decrementerStock(int quantite) throws StockInsuffisantException {
-        if (quantite > this.quantiteStock) {
-            throw new StockInsuffisantException(quantite, this.quantiteStock);
+    public void verifierStock(int quantite) throws StockInsuffisantException {
+        if (quantite > quantiteStock) {
+            throw new StockInsuffisantException(this, quantiteStock);
         }
-        this.quantiteStock -= quantite;
+    }
+
+    /**
+     * Diminue le stock de la quantité achetée. À appeler uniquement à la
+     * confirmation de la commande : le panier ne réserve jamais le stock.
+     *
+     * @param quantite le nombre d'exemplaires achetés
+     * @return le stock restant après la diminution
+     * @throws StockInsuffisantException si la quantité dépasse le stock disponible
+     *                                   (le stock reste alors inchangé)
+     */
+    public int decrementerStock(int quantite) throws StockInsuffisantException {
+        verifierStock(quantite);
+        quantiteStock -= quantite;
+        return quantiteStock;
     }
 }
-
