@@ -24,8 +24,11 @@ public class EcranAccueil extends JFrame {
     private final JLabel quantiteLabel = new JLabel("1");
     private final JLabel confirmationLabel = new JLabel(" ");
 
+
     private final JButton moinsBouton = new JButton("-");
     private final JButton plusBouton = new JButton("+");
+    private final JButton ajoutPanierBouton = new JButton("Ajouter au panier");
+    private final JButton ouvrirPanierBouton = new JButton("Ouvrir le panier");
     private final JButton acheterBouton = new JButton("Acheter");
 
     /** Quantité choisie par le client (1 par défaut, jamais en dessous). */
@@ -56,7 +59,18 @@ public class EcranAccueil extends JFrame {
     } catch (StockInsuffisantException ex) {
         afficherErreur(ex.getMessage());
     }
-});
+    });
+
+    ajoutPanierBouton.addActionListener(e -> {
+    // TODO : appeler session.ajouterAuPanier(quantite)
+    });
+
+    ouvrirPanierBouton.addActionListener(e -> {
+    // TODO : ouvrir l'écran panier
+        
+    });
+
+
 
         setPreferredSize(new Dimension(520, 560));
 
@@ -148,6 +162,23 @@ public class EcranAccueil extends JFrame {
         acheterBouton.setAlignmentX(Component.LEFT_ALIGNMENT);
         selecteur.add(plusBouton);
 
+            // Style AjoutPanierBouton
+        ajoutPanierBouton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        ajoutPanierBouton.setForeground(Color.WHITE);
+        ajoutPanierBouton.setBackground(new Color(31, 42, 68));
+        ajoutPanierBouton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
+        ajoutPanierBouton.setFocusPainted(false);
+        ajoutPanierBouton.setBorderPainted(false);
+        ajoutPanierBouton.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Style OuvrirPanierBouton 
+        ouvrirPanierBouton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        ouvrirPanierBouton.setForeground(new Color(31, 42, 68));
+        ouvrirPanierBouton.setBackground(new Color(225, 222, 216));
+        ouvrirPanierBouton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
+        ouvrirPanierBouton.setFocusPainted(false);
+        ouvrirPanierBouton.setBorderPainted(false);
+        ouvrirPanierBouton.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JPanel contenu = new JPanel();
         contenu.setLayout(new BoxLayout(contenu, BoxLayout.Y_AXIS));
@@ -164,7 +195,7 @@ public class EcranAccueil extends JFrame {
                 BorderFactory.createEmptyBorder(25, 25, 25, 25)
             )
         );
-        JLabel sousTitre = new JLabel("PRODUIT DU JOUR");
+        JLabel sousTitre = new JLabel("PRODUITS DU CATALOGUE");
 
         sousTitre.setFont(
             new Font("SansSerif", Font.BOLD, 12)
@@ -181,6 +212,8 @@ public class EcranAccueil extends JFrame {
             stockLabel,
             selecteur,
             acheterBouton,
+            ajoutPanierBouton,
+            ouvrirPanierBouton,
             confirmationLabel
         };
 
