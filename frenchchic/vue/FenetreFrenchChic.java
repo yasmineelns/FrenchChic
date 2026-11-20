@@ -1,42 +1,64 @@
 package frenchchic.vue;
 
 import frenchchic.controleur.SessionPasserCommande;
-import javax.swing.*;
+import frenchchic.controleur.SessionPasserCommande.ResultatConfirmation;
 import java.awt.*;
+import javax.swing.*;
 
-/**
- * Fenêtre unique de l'application. Gère la navigation entre les écrans 1 à 4.
- */
 public class FenetreFrenchChic extends JFrame {
 
     private final SessionPasserCommande session;
     private final JPanel conteneur;
     private final CardLayout cardLayout;
 
+    // Références aux écrans pour pouvoir appeler rafraichir() et afficher()
+    private final EcranAccueil           ecranAccueil;
+    private final EcranPanier            ecranPanier;
+    private final EcranLivraisonPaiement ecranLivraison;
+    private final EcranConfirmation      ecranConfirmation;
+
     public FenetreFrenchChic(SessionPasserCommande session) {
-        this.session = session;
+        this.session    = session;
         this.cardLayout = new CardLayout();
-        this.conteneur = new JPanel(cardLayout);
+        this.conteneur  = new JPanel(cardLayout);
 
         setTitle("French Chic");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        // Création des écrans
+        ecranAccueil      = new EcranAccueil(session, this);
+        ecranPanier       = new EcranPanier(session, this);
+        ecranLivraison    = new EcranLivraisonPaiement(session, this);
+        ecranConfirmation = new EcranConfirmation(this);
+
+        conteneur.add(ecranAccueil,      "accueil");
+        conteneur.add(ecranPanier,       "panier");
+        conteneur.add(ecranLivraison,    "livraison");
+        conteneur.add(ecranConfirmation, "confirmation");
+
         add(conteneur);
-
-        // Ajout des écrans (EcranAccueil est déjà prêt, les autres à créer)
-        conteneur.add(new EcranAccueil(session, this), "accueil");
-        // conteneur.add(new EcranPanier(session, this), "panier");   // sprint 2
-        // conteneur.add(new EcranLivraisonPaiement(session, this), "livraison");
-        // conteneur.add(new EcranConfirmation(session, this), "confirmation");
-
-        setPreferredSize(new Dimension(520, 560));
+        setPreferredSize(new Dimension(520, 620));
         pack();
-        setMinimumSize(new Dimension(480, 520));
+        setMinimumSize(new Dimension(480, 560));
         setLocationRelativeTo(null);
     }
 
-    public void afficherEcranAccueil()    { cardLayout.show(conteneur, "accueil"); }
-    public void afficherEcranPanier()     { cardLayout.show(conteneur, "panier"); }
-    public void afficherEcranLivraison()  { cardLayout.show(conteneur, "livraison"); }
-    public void afficherEcranConfirmation() { cardLayout.show(conteneur, "confirmation"); }
+    public void afficherEcranAccueil() {
+        cardLayout.show(conteneur, "accueil");
+    }
+
+    public void afficherEcranPanier() {
+        ecranPanier.rafraichir();
+        cardLayout.show(conteneur, "panier");
+    }
+
+    public void afficherEcranLivraison() {
+        ecranLivraison.rafraichir();
+        cardLayout.show(conteneur, "livraison");
+    }
+
+    public void afficherEcranConfirmation(ResultatConfirmation resultat) {
+        ecranConfirmation.afficher(resultat);
+        cardLayout.show(conteneur, "confirmation");
+    }
 }

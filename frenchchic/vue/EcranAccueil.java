@@ -1,65 +1,30 @@
 package frenchchic.vue;
 
 import frenchchic.controleur.SessionPasserCommande;
-import frenchchic.metier.Produit.StockInsuffisantException;
-import javax.swing.*;
+import frenchchic.controleur.SessionPasserCommande.InfosProduit;
+import frenchchic.metier.StockInsuffisantException;
 import java.awt.*;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
+import javax.swing.*;
 
 /**
  * Écran 1 — Liste des produits du catalogue.
  * Affiche pour chaque produit : libellé, prix, stock, sélecteur de quantité.
- * Permet d'ajouter au panier, d'ouvrir le panier ou d'acheter directement.
+ * Permet d'ajouter au panier ou d'ouvrir le panier.
  */
 public class EcranAccueil extends JPanel {
 
     private final SessionPasserCommande session;
     private final FenetreFrenchChic fenetre;
 
-    private final JLabel libelleLabel      = new JLabel();
-    private final JLabel prixLabel         = new JLabel();
-    private final JLabel stockLabel        = new JLabel();
-    private final JLabel quantiteLabel     = new JLabel("1");
-    private final JLabel confirmationLabel = new JLabel(" ");
-
-    private final JButton moinsBouton       = new JButton("-");
-    private final JButton plusBouton        = new JButton("+");
-    private final JButton acheterBouton     = new JButton("Acheter maintenant");
-    private final JButton ajoutPanierBouton = new JButton("Ajouter au panier");
     private final JButton ouvrirPanierBouton = new JButton("Ouvrir le panier");
-
-    private int quantite = 1;
 
     public EcranAccueil(SessionPasserCommande session, FenetreFrenchChic fenetre) {
         this.session = session;
         this.fenetre = fenetre;
-
         construireInterface();
-
-        // Affichage du produit — à remplacer par une liste quand SessionPasserCommande
-        // exposera consulterProduits() renvoyant List<InfosProduit>
-        SessionPasserCommande.InfosProduit p = session.consulterProduitDuJour();
-        afficherProduit(p.libelle(), p.prix(), p.stock());
-
-        moinsBouton.addActionListener(e -> changerQuantite(-1));
-        plusBouton.addActionListener(e -> changerQuantite(+1));
-
-        acheterBouton.addActionListener(e -> {
-            try {
-                int stockRestant = session.acheter(quantite);
-                afficherConfirmation(quantite, stockRestant);
-            } catch (StockInsuffisantException ex) {
-                afficherErreur(ex.getMessage());
-            }
-        });
-
-        ajoutPanierBouton.addActionListener(e -> {
-            // TODO : session.ajouterAuPanier(quantite)
-            fenetre.afficherEcranPanier();
-        });
-
-        ouvrirPanierBouton.addActionListener(e -> fenetre.afficherEcranPanier());
     }
 
     private void construireInterface() {
@@ -67,90 +32,142 @@ public class EcranAccueil extends JPanel {
         setBackground(new Color(245, 242, 236));
 
         // --- En-tête ---
+        JPanel entete = new JPanel(new BorderLayout());
+        entete.setBackground(new Color(31, 42, 68));
+
         JLabel titre = new JLabel("FRENCH CHIC", SwingConstants.CENTER);
         titre.setFont(new Font("SansSerif", Font.BOLD, 26));
         titre.setForeground(Color.WHITE);
-        titre.setOpaque(true);
-        titre.setBackground(new Color(31, 42, 68));
         titre.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
-        add(titre, BorderLayout.NORTH);
+        entete.add(titre, BorderLayout.CENTER);
 
-        // --- Infos produit ---
-        libelleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        styleBoutonAction(ouvrirPanierBouton,
+                new Color(225, 222, 216), new Color(31, 42, 68));
+        ouvrirPanierBouton.setPreferredSize(new Dimension(160, 40));
+        ouvrirPanierBouton.setMaximumSize(new Dimension(160, 40));
+
+        JPanel panierWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        panierWrapper.setBackground(new Color(31, 42, 68));
+        panierWrapper.add(ouvrirPanierBouton);
+        entete.add(panierWrapper, BorderLayout.EAST);
+
+        ouvrirPanierBouton.addActionListener(e -> fenetre.afficherEcranPanier());
+
+        add(entete, BorderLayout.NORTH);
+
+        // --- Corps : une carte par produit ---
+        JPanel catalogue = new JPanel();
+        catalogue.setLayout(new BoxLayout(catalogue, BoxLayout.Y_AXIS));
+        catalogue.setBackground(new Color(245, 242, 236));
+        catalogue.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
+
+        JLabel sousTitre = new JLabel("PRODUITS DU CATALOGUE");
+        sousTitre.setFont(new Font("SansSerif", Font.BOLD, 12));
+        sousTitre.setForeground(new Color(120, 115, 105));
+        sousTitre.setAlignmentX(Component.LEFT_ALIGNMENT);
+        catalogue.add(sousTitre);
+        catalogue.add(Box.createVerticalStrut(16));
+
+        List<InfosProduit> produits = session.consulterProduits();
+        for (InfosProduit p : produits) {
+            catalogue.add(creerCarteProduit(p));
+            catalogue.add(Box.createVerticalStrut(16));
+        }
+
+        JScrollPane scroll = new JScrollPane(catalogue);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(new Color(245, 242, 236));
+        add(scroll, BorderLayout.CENTER);
+    }
+
+    private JPanel creerCarteProduit(InfosProduit p) {
+
+        JLabel libelleLabel = new JLabel(p.libelle());
+        libelleLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
         libelleLabel.setForeground(new Color(31, 42, 68));
 
-        prixLabel.setFont(new Font("SansSerif", Font.BOLD, 28));
+        JLabel prixLabel = new JLabel(formaterPrix(p.prix()));
+        prixLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
         prixLabel.setForeground(new Color(39, 105, 75));
 
-        stockLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        JLabel stockLabel = new JLabel("Stock disponible : " + p.stock());
+        stockLabel.setFont(new Font("SansSerif", Font.PLAIN, 13));
         stockLabel.setForeground(new Color(90, 95, 100));
 
-        confirmationLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
-        confirmationLabel.setForeground(new Color(39, 105, 75));
+        JLabel confirmationLabel = new JLabel(" ");
+        confirmationLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
 
-        // --- Sélecteur de quantité ---
-        JPanel selecteur = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 5));
-        selecteur.setBackground(Color.WHITE);
+        // Sélecteur de quantité local à cette carte
+        int[] quantite = {1};
 
-        JLabel texteQuantite = new JLabel("Quantité :");
-        texteQuantite.setFont(new Font("SansSerif", Font.PLAIN, 15));
-
-        styleBoutonQuantite(moinsBouton);
-        styleBoutonQuantite(plusBouton);
-
+        JLabel quantiteLabel = new JLabel("1");
         quantiteLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
         quantiteLabel.setForeground(new Color(31, 42, 68));
         quantiteLabel.setHorizontalAlignment(SwingConstants.CENTER);
         quantiteLabel.setPreferredSize(new Dimension(35, 42));
 
+        JButton moinsBouton = new JButton("-");
+        JButton plusBouton  = new JButton("+");
+        styleBoutonQuantite(moinsBouton);
+        styleBoutonQuantite(plusBouton);
+
+        moinsBouton.addActionListener(e -> {
+            quantite[0] = Math.max(1, quantite[0] - 1);
+            quantiteLabel.setText(String.valueOf(quantite[0]));
+        });
+        plusBouton.addActionListener(e -> {
+            quantite[0]++;
+            quantiteLabel.setText(String.valueOf(quantite[0]));
+        });
+
+        JPanel selecteur = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        selecteur.setBackground(Color.WHITE);
+        JLabel texteQuantite = new JLabel("Quantité :");
+        texteQuantite.setFont(new Font("SansSerif", Font.PLAIN, 14));
         selecteur.add(texteQuantite);
         selecteur.add(moinsBouton);
         selecteur.add(quantiteLabel);
         selecteur.add(plusBouton);
 
-        // --- Boutons d'action ---
-        styleBoutonAction(acheterBouton,      new Color(31, 42, 68), Color.WHITE);
-        styleBoutonAction(ajoutPanierBouton,  new Color(31, 42, 68), Color.WHITE);
-        styleBoutonAction(ouvrirPanierBouton, new Color(225, 222, 216), new Color(31, 42, 68));
+        JButton ajoutPanierBouton = new JButton("Ajouter au panier");
+        styleBoutonAction(ajoutPanierBouton, new Color(31, 42, 68), Color.WHITE);
 
-        // --- Carte produit ---
-        JLabel sousTitre = new JLabel("PRODUITS DU CATALOGUE");
-        sousTitre.setFont(new Font("SansSerif", Font.BOLD, 12));
-        sousTitre.setForeground(new Color(120, 115, 105));
+        ajoutPanierBouton.addActionListener(e -> {
+            try {
+                int nombreArticles = session.ajouterAuPanier(
+                        p.libelle(), quantite[0]);
+                confirmationLabel.setForeground(new Color(39, 105, 75));
+                confirmationLabel.setText(quantite[0]
+                        + " article(s) ajouté(s) — "
+                        + nombreArticles + " article(s) au panier");
+                quantite[0] = 1;
+                quantiteLabel.setText("1");
+            } catch (StockInsuffisantException ex) {
+                confirmationLabel.setForeground(new Color(180, 40, 40));
+                confirmationLabel.setText(ex.getMessage());
+            }
+        });
 
-        JPanel carteProduit = new JPanel();
-        carteProduit.setLayout(new BoxLayout(carteProduit, BoxLayout.Y_AXIS));
-        carteProduit.setBackground(Color.WHITE);
-        carteProduit.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(225, 222, 216)),
-            BorderFactory.createEmptyBorder(25, 25, 25, 25)
+        // Assemblage de la carte
+        JPanel carte = new JPanel();
+        carte.setLayout(new BoxLayout(carte, BoxLayout.Y_AXIS));
+        carte.setBackground(Color.WHITE);
+        carte.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(225, 222, 216)),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
+        carte.setAlignmentX(Component.LEFT_ALIGNMENT);
+        carte.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-        JComponent[] composants = {
-            sousTitre,
-            libelleLabel,
-            prixLabel,
-            stockLabel,
-            selecteur,
-            acheterBouton,
-            ajoutPanierBouton,
-            ouvrirPanierBouton,
-            confirmationLabel
-        };
-
-        for (JComponent c : composants) {
+        for (JComponent c : new JComponent[]{
+                libelleLabel, prixLabel, stockLabel,
+                selecteur, ajoutPanierBouton, confirmationLabel}) {
             c.setAlignmentX(Component.LEFT_ALIGNMENT);
-            carteProduit.add(c);
-            carteProduit.add(Box.createVerticalStrut(12));
+            carte.add(c);
+            carte.add(Box.createVerticalStrut(10));
         }
 
-        JPanel contenu = new JPanel();
-        contenu.setLayout(new BoxLayout(contenu, BoxLayout.Y_AXIS));
-        contenu.setBackground(new Color(245, 242, 236));
-        contenu.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
-        contenu.add(carteProduit);
-
-        add(contenu, BorderLayout.CENTER);
+        return carte;
     }
 
     private void styleBoutonQuantite(JButton b) {
@@ -166,37 +183,14 @@ public class EcranAccueil extends JPanel {
     }
 
     private void styleBoutonAction(JButton b, Color bg, Color fg) {
-        b.setFont(new Font("SansSerif", Font.BOLD, 16));
+        b.setFont(new Font("SansSerif", Font.BOLD, 15));
         b.setBackground(bg);
         b.setForeground(fg);
-        b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
+        b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         b.setAlignmentX(Component.LEFT_ALIGNMENT);
         b.setFocusPainted(false);
         b.setBorderPainted(false);
         b.setOpaque(true);
-    }
-
-    private void changerQuantite(int delta) {
-        quantite = Math.max(1, quantite + delta);
-        quantiteLabel.setText(String.valueOf(quantite));
-    }
-
-    public void afficherProduit(String libelle, double prix, int stock) {
-        libelleLabel.setText(libelle);
-        prixLabel.setText(formaterPrix(prix));
-        stockLabel.setText("Stock disponible : " + stock);
-    }
-
-    public void afficherErreur(String message) {
-        confirmationLabel.setForeground(new Color(180, 40, 40));
-        confirmationLabel.setText(message);
-    }
-
-    public void afficherConfirmation(int quantite, int stockRestant) {
-        confirmationLabel.setForeground(new Color(39, 105, 75));
-        stockLabel.setText("Stock restant : " + stockRestant);
-        String exemplaires = quantite > 1 ? " exemplaires achetés" : " exemplaire acheté";
-        confirmationLabel.setText("Achat confirmé : " + quantite + exemplaires);
     }
 
     private static String formaterPrix(double prix) {

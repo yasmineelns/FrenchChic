@@ -3,12 +3,13 @@ package frenchchic.vue;
 import frenchchic.controleur.ChampLivraisonInvalideException;
 import frenchchic.controleur.SessionPasserCommande;
 import frenchchic.controleur.SessionPasserCommande.ResultatConfirmation;
-import frenchchic.metier.Produit.StockInsuffisantException;
-
-import javax.swing.*;
+import frenchchic.metier.StockInsuffisantException;
 import java.awt.*;
+import java.text.NumberFormat;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
+import javax.swing.*;
 
 /**
  * Écran 3 — Livraison et paiement.
@@ -21,11 +22,11 @@ public class EcranLivraisonPaiement extends JPanel {
     private final FenetreFrenchChic fenetre;
 
     // Champs de saisie
-    private final JTextField nomField      = new JTextField();
-    private final JTextField prenomField   = new JTextField();
-    private final JTextField telField      = new JTextField();
-    private final JTextField emailField    = new JTextField();
-    private final JTextField adresseField  = new JTextField();
+    private final JTextField nomField     = new JTextField();
+    private final JTextField prenomField  = new JTextField();
+    private final JTextField telField     = new JTextField();
+    private final JTextField emailField   = new JTextField();
+    private final JTextField adresseField = new JTextField();
 
     // Labels d'erreur sous chaque champ
     private final JLabel errNom     = erreurLabel();
@@ -71,25 +72,21 @@ public class EcranLivraisonPaiement extends JPanel {
         corps.setBackground(new Color(245, 242, 236));
         corps.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
 
-        // Formulaire de livraison
         corps.add(sectionLabel("INFORMATIONS DE LIVRAISON"));
         corps.add(Box.createVerticalStrut(12));
         corps.add(carteFormulaire());
         corps.add(Box.createVerticalStrut(20));
 
-        // Mode de paiement
         corps.add(sectionLabel("MODE DE PAIEMENT"));
         corps.add(Box.createVerticalStrut(12));
         corps.add(cartePaiement());
         corps.add(Box.createVerticalStrut(20));
 
-        // Récapitulatif
         corps.add(sectionLabel("RÉCAPITULATIF"));
         corps.add(Box.createVerticalStrut(12));
         corps.add(carteRecap());
         corps.add(Box.createVerticalStrut(24));
 
-        // Boutons
         styleBouton(retourBouton,    new Color(225, 222, 216), new Color(31, 42, 68));
         styleBouton(confirmerBouton, new Color(31, 42, 68),    Color.WHITE);
         retourBouton.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -105,24 +102,23 @@ public class EcranLivraisonPaiement extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
-    /** Carte blanche contenant le formulaire de livraison. */
     private JPanel carteFormulaire() {
         JPanel carte = carte();
 
-        String[][] champs = {
-            {"Nom *",      "nom"},
-            {"Prénom *",   "prenom"},
-            {"Téléphone * (10 chiffres)", "tel"},
-            {"Email *",    "email"},
-            {"Adresse *",  "adresse"}
-        };
         JTextField[] fields  = {nomField, prenomField, telField,
                                  emailField, adresseField};
         JLabel[]     erreurs = {errNom, errPrenom, errTel,
                                  errEmail, errAdresse};
+        String[]     labels  = {
+            "Nom *",
+            "Prénom *",
+            "Téléphone * (10 chiffres)",
+            "Email *",
+            "Adresse *"
+        };
 
-        for (int i = 0; i < champs.length; i++) {
-            JLabel label = new JLabel(champs[i][0]);
+        for (int i = 0; i < labels.length; i++) {
+            JLabel label = new JLabel(labels[i]);
             label.setFont(new Font("SansSerif", Font.PLAIN, 13));
             label.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -141,7 +137,6 @@ public class EcranLivraisonPaiement extends JPanel {
         return carte;
     }
 
-    /** Carte affichant le mode de paiement à la livraison. */
     private JPanel cartePaiement() {
         JPanel carte = carte();
 
@@ -162,7 +157,6 @@ public class EcranLivraisonPaiement extends JPanel {
         return carte;
     }
 
-    /** Carte affichant le récapitulatif (remplie à l'affichage). */
     private JPanel carteRecap() {
         JPanel carte = carte();
 
@@ -187,23 +181,36 @@ public class EcranLivraisonPaiement extends JPanel {
 
         confirmerBouton.addActionListener(e -> {
             effacerErreurs();
+
             Map<String, String> champs = new LinkedHashMap<>();
-            champs.put("nom",      nomField.getText().trim());
-            champs.put("prenom",   prenomField.getText().trim());
-            champs.put("telephone", telField.getText().trim());
-            champs.put("email",    emailField.getText().trim());
-            champs.put("adresse",  adresseField.getText().trim());
+            champs.put("nom",        nomField.getText().trim());
+            champs.put("prenom",     prenomField.getText().trim());
+            champs.put("telephone",  telField.getText().trim());
+            champs.put("email",      emailField.getText().trim());
+            champs.put("adresse",    adresseField.getText().trim());
 
             try {
                 ResultatConfirmation resultat = session.confirmerCommande(champs);
                 fenetre.afficherEcranConfirmation(resultat);
 
             } catch (ChampLivraisonInvalideException ex) {
-                afficherErreurChamp(ex.getChamp(), ex.getMessage());
+                for (String erreur : ex.getErreurs()) {
+                    String lower = erreur.toLowerCase();
+                    if (lower.contains("nom"))
+                        errNom.setText(erreur);
+                    else if (lower.contains("prénom") || lower.contains("prenom"))
+                        errPrenom.setText(erreur);
+                    else if (lower.contains("téléphone") || lower.contains("telephone"))
+                        errTel.setText(erreur);
+                    else if (lower.contains("email"))
+                        errEmail.setText(erreur);
+                    else if (lower.contains("adresse"))
+                        errAdresse.setText(erreur);
+                }
 
             } catch (StockInsuffisantException ex) {
-                // Stock devenu insuffisant entre l'ajout et la confirmation
-                JOptionPane.showMessageDialog(this,
+                JOptionPane.showMessageDialog(
+                        this,
                         ex.getMessage(),
                         "Stock insuffisant",
                         JOptionPane.WARNING_MESSAGE);
@@ -212,7 +219,7 @@ public class EcranLivraisonPaiement extends JPanel {
     }
 
     /**
-     * Met à jour le récapitulatif à partir du panier courant.
+     * Recharge le récapitulatif depuis le panier courant.
      * À appeler depuis FenetreFrenchChic avant d'afficher cet écran.
      */
     public void rafraichir() {
@@ -228,26 +235,17 @@ public class EcranLivraisonPaiement extends JPanel {
         sb.append("</html>");
         recapLabel.setText(sb.toString());
 
-        totalLabel.setText(String.format("Total à payer : %.2f €",
-                recap.total()).replace(".", ","));
+        totalLabel.setText(
+                NumberFormat.getCurrencyInstance(Locale.FRANCE)
+                            .format(recap.total()));
     }
 
     // -------------------------------------------------------------------------
     // Helpers
 
-    private void afficherErreurChamp(String champ, String message) {
-        switch (champ) {
-            case "nom"       -> errNom.setText(message);
-            case "prenom"    -> errPrenom.setText(message);
-            case "telephone" -> errTel.setText(message);
-            case "email"     -> errEmail.setText(message);
-            case "adresse"   -> errAdresse.setText(message);
-        }
-    }
-
     private void effacerErreurs() {
-        for (JLabel l : new JLabel[]{errNom, errPrenom,
-                                      errTel, errEmail, errAdresse}) {
+        for (JLabel l : new JLabel[]{
+                errNom, errPrenom, errTel, errEmail, errAdresse}) {
             l.setText(" ");
         }
     }

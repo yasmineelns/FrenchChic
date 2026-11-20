@@ -26,4 +26,8 @@ public class DepotCommandes {
     public void enregistrer(Commande commande) {
         throw new UnsupportedOperationException("À implémenter (lot 2)");
     }
+
+    public Commande getCommande(String numeroTransaction) {
+    throw new UnsupportedOperationException("À implémenter (lot 2)");
+}
 }
