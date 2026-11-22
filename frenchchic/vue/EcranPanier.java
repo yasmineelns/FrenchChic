@@ -266,6 +266,9 @@ public class EcranPanier extends JPanel {
         b.setForeground(Color.WHITE);
         b.setBackground(new Color(31, 42, 68));
         b.setPreferredSize(new Dimension(38, 38));
+        // Sans marge : la marge par défaut (14 px de chaque côté) ne laisse
+        // pas assez de place au « + » / « - », remplacés alors par « ... ».
+        b.setMargin(new Insets(0, 0, 0, 0));
         b.setFocusPainted(false);
         b.setBorderPainted(false);
         b.setContentAreaFilled(true);
