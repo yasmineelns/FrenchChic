@@ -44,6 +44,7 @@ public class FenetreFrenchChic extends JFrame {
     }
 
     public void afficherEcranAccueil() {
+        ecranAccueil.rafraichir();   // stocks à jour après une commande
         cardLayout.show(conteneur, "accueil");
     }
 

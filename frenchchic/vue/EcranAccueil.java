@@ -21,6 +21,9 @@ public class EcranAccueil extends JPanel {
 
     private final JButton ouvrirPanierBouton = new JButton("Ouvrir le panier");
 
+    /** Zone des cartes produits, reconstruite à chaque retour sur l'écran. */
+    private final JPanel catalogue = new JPanel();
+
     public EcranAccueil(SessionPasserCommande session, FenetreFrenchChic fenetre) {
         this.session = session;
         this.fenetre = fenetre;
@@ -56,11 +59,29 @@ public class EcranAccueil extends JPanel {
         add(entete, BorderLayout.NORTH);
 
         // --- Corps : une carte par produit ---
-        JPanel catalogue = new JPanel();
         catalogue.setLayout(new BoxLayout(catalogue, BoxLayout.Y_AXIS));
         catalogue.setBackground(new Color(245, 242, 236));
         catalogue.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
+        remplirCatalogue();
 
+        JScrollPane scroll = new JScrollPane(catalogue);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(new Color(245, 242, 236));
+        add(scroll, BorderLayout.CENTER);
+    }
+
+    /**
+     * Recharge le catalogue depuis la session (prix et stocks à jour), par
+     * exemple au retour sur l'écran après une commande confirmée.
+     */
+    public void rafraichir() {
+        catalogue.removeAll();
+        remplirCatalogue();
+        catalogue.revalidate();
+        catalogue.repaint();
+    }
+
+    private void remplirCatalogue() {
         JLabel sousTitre = new JLabel("PRODUITS DU CATALOGUE");
         sousTitre.setFont(new Font("SansSerif", Font.BOLD, 12));
         sousTitre.setForeground(new Color(120, 115, 105));
@@ -73,11 +94,6 @@ public class EcranAccueil extends JPanel {
             catalogue.add(creerCarteProduit(p));
             catalogue.add(Box.createVerticalStrut(16));
         }
-
-        JScrollPane scroll = new JScrollPane(catalogue);
-        scroll.setBorder(null);
-        scroll.getViewport().setBackground(new Color(245, 242, 236));
-        add(scroll, BorderLayout.CENTER);
     }
 
     private JPanel creerCarteProduit(InfosProduit p) {
