@@ -1,7 +1,7 @@
 
 SET client_encoding = 'UTF8';
 
-Catalogue des produits
+
 CREATE TABLE IF NOT EXISTS produit (
     reference       VARCHAR(20)   PRIMARY KEY,
     libelle         VARCHAR(100)  NOT NULL,
