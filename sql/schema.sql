@@ -1,15 +1,7 @@
--- =====================================================================
--- French Chic — schéma PostgreSQL (lot 2 : persistance)
---
--- À exécuter une fois sur une base vide (relançable sans risque) :
---   psql -U postgres -d frenchchic -f sql/schema.sql
--- =====================================================================
 
--- Ce fichier est en UTF-8. Sans cette ligne, psql sous Windows le lit en
--- WIN1252 et les accents sont enregistrés de travers (« Ã© » au lieu de « é »).
 SET client_encoding = 'UTF8';
 
--- Catalogue des produits
+Catalogue des produits
 CREATE TABLE IF NOT EXISTS produit (
     reference       VARCHAR(20)   PRIMARY KEY,
     libelle         VARCHAR(100)  NOT NULL,
@@ -17,7 +9,7 @@ CREATE TABLE IF NOT EXISTS produit (
     quantite_stock  INTEGER       NOT NULL CHECK (quantite_stock >= 0)
 );
 
--- Commandes confirmées : jamais modifiées ni supprimées (conservation 10 ans)
+-- Commandes confirmée
 CREATE TABLE IF NOT EXISTS commande (
     numero_transaction  VARCHAR(30)   PRIMARY KEY,          -- TR-AAAAMMJJ-NNNNNN
     numero_ordre        INTEGER       NOT NULL UNIQUE,      -- NNNNNN
