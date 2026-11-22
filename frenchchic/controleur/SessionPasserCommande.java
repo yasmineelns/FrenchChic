@@ -46,11 +46,12 @@ public class SessionPasserCommande {
     /**
      * Informations d'un produit renvoyées à l'écran 1 (liste des produits).
      *
-     * @param libelle libellé du produit
-     * @param prix    prix unitaire en euros
-     * @param stock   quantité disponible en stock
+     * @param reference référence du produit (à renvoyer à la session)
+     * @param libelle   libellé du produit
+     * @param prix      prix unitaire en euros
+     * @param stock     quantité disponible en stock
      */
-    public record InfosProduit(String libelle, double prix, int stock) { }
+    public record InfosProduit(String reference, String libelle, double prix, int stock) { }
 
     /**
      * Résumé du panier renvoyé à l'écran 2 (panier).
@@ -113,6 +114,7 @@ public class SessionPasserCommande {
         List<InfosProduit> result = new ArrayList<>();
         for (Produit p : produits) {
             result.add(new InfosProduit(
+                    p.getReference(),
                     p.getLibelle(),
                     p.getPrix(),
                     p.getQuantiteStock()));
@@ -140,7 +142,7 @@ public class SessionPasserCommande {
      * {@link StockInsuffisantException} est levée — le produit n'est pas ajouté
      * au panier, le stock reste inchangé.
      *
-     * @param reference référence (libellé) du produit choisi par le client
+     * @param reference référence du produit choisi par le client
      * @param quantite  quantité demandée (≥ 1)
      * @return le nombre total d'articles dans le panier après l'ajout
      * @throws StockInsuffisantException si la quantité dépasse le stock

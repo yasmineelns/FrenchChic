@@ -223,19 +223,19 @@ public class EcranPanier extends JPanel {
             int nouvelleQte = ligne.getQuantite() - 1;
             if (nouvelleQte < 1) return;
             session.modifierQuantitePanier(
-                    ligne.getProduit().getLibelle(), nouvelleQte);
+                    ligne.getProduit().getReference(), nouvelleQte);
             rafraichir();
         });
 
         plusBouton.addActionListener(e -> {
             int nouvelleQte = ligne.getQuantite() + 1;
             session.modifierQuantitePanier(
-                    ligne.getProduit().getLibelle(), nouvelleQte);
+                    ligne.getProduit().getReference(), nouvelleQte);
             rafraichir();
         });
 
         supprimerBouton.addActionListener(e -> {
-            session.retirerDuPanier(ligne.getProduit().getLibelle());
+            session.retirerDuPanier(ligne.getProduit().getReference());
             rafraichir();
         });
 

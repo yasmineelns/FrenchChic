@@ -5,3 +5,8 @@ out/
 .DS_Store # évite de committer ce fichier parasite de macOS
 *.class
 .DS_Store
+
+# pilote JDBC et bibliothèques locales
+lib/
+# configuration locale de la base (contient le mot de passe)
+db.properties

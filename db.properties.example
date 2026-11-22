@@ -1,0 +1,6 @@
+# Paramètres de connexion à PostgreSQL.
+# Copier ce fichier en "db.properties" (même dossier) et remplir le mot de passe.
+# db.properties est exclu de Git : le mot de passe ne part jamais sur GitHub.
+url=jdbc:postgresql://localhost:5432/frenchchic
+utilisateur=postgres
+motDePasse=

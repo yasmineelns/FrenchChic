@@ -135,7 +135,7 @@ public class EcranAccueil extends JPanel {
         ajoutPanierBouton.addActionListener(e -> {
             try {
                 int nombreArticles = session.ajouterAuPanier(
-                        p.libelle(), quantite[0]);
+                        p.reference(), quantite[0]);
                 confirmationLabel.setForeground(new Color(39, 105, 75));
                 confirmationLabel.setText(quantite[0]
                         + " article(s) ajouté(s) — "

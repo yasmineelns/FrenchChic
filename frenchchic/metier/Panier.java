@@ -9,9 +9,11 @@ public class Panier {
 
 
 
+    // Les produits sont comparés avec equals (même référence) et non avec == :
+    // le dépôt JDBC renvoie un nouvel objet Produit à chaque lecture.
     public void ajouterLigne(Produit produit, int quantite) {
         for (LignePanier ligne : lignes) {
-            if (ligne.getProduit() == produit) {
+            if (ligne.getProduit().equals(produit)) {
                 ligne.setQuantite(ligne.getQuantite() + quantite);
                 return;
             }
@@ -21,7 +23,7 @@ public class Panier {
 
     public void modifierQuantite(Produit produit, int quantite) {
         for (LignePanier ligne : lignes) {
-            if (ligne.getProduit() == produit) {
+            if (ligne.getProduit().equals(produit)) {
                 ligne.setQuantite(quantite);
                 return;
             }
@@ -29,7 +31,7 @@ public class Panier {
     }
 
     public void retirerProduit(Produit produit) {
-        lignes.removeIf(ligne -> ligne.getProduit() == produit);
+        lignes.removeIf(ligne -> ligne.getProduit().equals(produit));
     }
 
     public void vider() {
