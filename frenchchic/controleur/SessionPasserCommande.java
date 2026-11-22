@@ -270,11 +270,21 @@ public class SessionPasserCommande {
         InfosLivraison infosLivraison = validateurLivraison.valider(champs);
 
         // --- Étape 2 : vérification du stock de chaque ligne (alternatif B) ---
-        //     On vérifie TOUT avant de toucher au stock (atomicité logique)
+        //     On vérifie TOUT avant de toucher au stock (atomicité logique).
+        //     Le stock est relu dans le dépôt : celui du produit gardé dans le
+        //     panier date de l'ajout et a pu baisser depuis (autre client).
         List<LignePanier> lignes = panier.getLignes();
+        List<Produit> produitsActuels = new ArrayList<>();
         for (LignePanier ligne : lignes) {
+            String reference = ligne.getProduit().getReference();
+            Produit actuel = depotProduits.getProduit(reference);
+            if (actuel == null) {
+                throw new IllegalStateException(
+                        "Produit retiré du catalogue : " + reference);
+            }
             // Délègue au Produit (Sd VerifierStock)
-            ligne.getProduit().verifierStock(ligne.getQuantite());
+            actuel.verifierStock(ligne.getQuantite());
+            produitsActuels.add(actuel);
         }
 
         // --- Étape 3 : enregistrement de la commande (Sd EnregistrerCommande) ---
@@ -282,7 +292,7 @@ public class SessionPasserCommande {
 
         // --- Étape 4 : mise à jour des stocks (Sd MettreAJourStocks) ---
         //     À ce stade tous les vérifications sont passées : on décrémente
-        List<Integer> stocksRestants = mettreAJourStocks(lignes);
+        List<Integer> stocksRestants = mettreAJourStocks(lignes, produitsActuels);
 
         // --- Étape 5 : récupérer la commande enregistrée et vider le panier ---
         Commande commande = depotCommandes.getCommande(numeroTransaction);
@@ -331,17 +341,20 @@ public class SessionPasserCommande {
      * <p>Précondition : le stock de chaque produit a déjà été vérifié
      * (aucune exception ne devrait être levée ici).
      *
-     * @param lignes lignes de la commande à traiter
+     * @param lignes          lignes de la commande à traiter
+     * @param produitsActuels produits relus dans le dépôt, dans l'ordre des lignes
      * @return stocks restants après décrémentation, dans l'ordre des lignes
      */
-    private List<Integer> mettreAJourStocks(List<LignePanier> lignes) {
+    private List<Integer> mettreAJourStocks(List<LignePanier> lignes,
+                                            List<Produit> produitsActuels) {
         List<Integer> stocksRestants = new ArrayList<>();
-        for (LignePanier ligne : lignes) {
+        for (int i = 0; i < lignes.size(); i++) {
+            LignePanier ligne = lignes.get(i);
+            Produit produit = produitsActuels.get(i);
             try {
-                int restant = ligne.getProduit()
-                        .decrementerStock(ligne.getQuantite());
+                int restant = produit.decrementerStock(ligne.getQuantite());
                 // Persiste le nouveau stock dans le dépôt
-                depotProduits.enregistrer(ligne.getProduit());
+                depotProduits.enregistrer(produit);
                 stocksRestants.add(restant);
             } catch (StockInsuffisantException e) {
                 // Ne devrait pas arriver (stock vérifié à l'étape 2)

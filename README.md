@@ -38,10 +38,33 @@ javac -encoding UTF-8 -d out -cp "lib/*" (Get-ChildItem frenchchic -Recurse -Fil
 java -cp "out;lib/*" frenchchic.Main
 ```
 
-Tests du lot 1 (couche métier, sans base de données) :
+## Tests
+
+Lot 1 — couche métier, sans base de données :
 
 ```powershell
 java -cp out Lot1MetierTests
+```
+
+Lot 2 — contrôleur, sans base de données (dépôts simulés en mémoire) :
+
+```powershell
+java -cp out Lot2ControleurTests
+```
+
+Lot 2 — persistance JDBC, sur une **base de test séparée** (elle est vidée à
+chaque test ; les tests refusent de tourner sur une base dont le nom ne
+contient pas « test »). Création de la base de test, une seule fois :
+
+```powershell
+& "C:\Program Files\PostgreSQL\19\bin\psql.exe" -U postgres -c "CREATE DATABASE frenchchic_test"
+& "C:\Program Files\PostgreSQL\19\bin\psql.exe" -U postgres -d frenchchic_test -f sql/schema.sql
+```
+
+Lancement (même compte que `db.properties`, seule l'URL change) :
+
+```powershell
+java "-Dfrenchchic.url=jdbc:postgresql://localhost:5432/frenchchic_test" -cp "out;lib/*" Lot2PersistanceTests
 ```
 
 ## Organisation du code

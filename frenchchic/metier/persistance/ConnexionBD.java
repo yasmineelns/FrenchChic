@@ -17,6 +17,9 @@ import java.util.Properties;
  * de lancement, ou à l'emplacement donné par
  * {@code -Dfrenchchic.config=chemin/vers/db.properties}.
  * Ce fichier n'est pas versionné : voir {@code db.properties.example}.
+ *
+ * <p>{@code -Dfrenchchic.url=...} remplace seulement l'URL (utilisé par les
+ * tests pour viser la base {@code frenchchic_test} avec le même compte).
  */
 public final class ConnexionBD {
 
@@ -54,7 +57,8 @@ public final class ConnexionBD {
     public static Connection ouvrir() throws SQLException {
         Properties p = parametres();
         return DriverManager.getConnection(
-                p.getProperty("url", "jdbc:postgresql://localhost:5432/frenchchic"),
+                System.getProperty("frenchchic.url",
+                        p.getProperty("url", "jdbc:postgresql://localhost:5432/frenchchic")),
                 p.getProperty("utilisateur", "postgres"),
                 p.getProperty("motDePasse", ""));
     }
