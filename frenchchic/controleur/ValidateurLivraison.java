@@ -1,10 +1,10 @@
 package frenchchic.controleur;
 
-import frenchchic.metier.InfosLivraison;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import frenchchic.metier.InfosLivraison;
 
 
 public class ValidateurLivraison {
@@ -35,14 +35,15 @@ public class ValidateurLivraison {
         String email     = extraire(champs, EMAIL,     erreurs, "Le champ Email est obligatoire.");
         String adresse   = extraire(champs, ADRESSE,   erreurs, "Le champ Adresse est obligatoire.");
 
-        // Validation du format email (RG5 : doit contenir "@")
-        if (email != null && !email.contains("@")) {
-            erreurs.add("L'adresse email est invalide (doit contenir '@').");
+        // Validation du format email (RG5)
+        
+        if (email != null && !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+            erreurs.add("L'adresse email est invalide (ex: marie@gmail.com).");
         }
 
-        // Validation du format téléphone (RG5 : exactement 10 chiffres)
-        if (telephone != null && !telephone.matches("\\d{10}")) {
-            erreurs.add("Le numéro de téléphone doit comporter exactement 10 chiffres.");
+        // Validation du format téléphone (RG5)
+        if (telephone != null && !telephone.matches("0[1-9]\\d{8}")) {
+            erreurs.add("Le numéro de téléphone est invalide (ex: 0612345678).");
         }
 
         if (!erreurs.isEmpty()) {
