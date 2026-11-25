@@ -157,8 +157,20 @@ public class SessionPasserCommande {
             throw new IllegalArgumentException(
                     "Produit introuvable : " + reference);
         }
+        // Calcule la quantité déjà présente dans le panier pour ce produit,
+        // afin de vérifier que le TOTAL (existant + nouveau) ne dépasse pas le stock.
+        int quantiteDejaAuPanier = 0;
+        for (LignePanier ligne : panier.getLignes()) {
+            if (ligne.getProduit().equals(produit)) {
+                quantiteDejaAuPanier = ligne.getQuantite();
+                break;
+            }
+        }
+        int quantiteTotale = quantiteDejaAuPanier + quantite;
+
         // Délégation de la vérification au Produit (Sd VerifierStock)
-        produit.verifierStock(quantite);
+        // On vérifie la quantité TOTALE et non seulement la nouvelle demande.
+        produit.verifierStock(quantiteTotale);
         // Stock suffisant : on ajoute au panier
         panier.ajouterLigne(produit, quantite);
         return panier.getNombreArticles();
