@@ -1,6 +1,7 @@
 package frenchchic.vue;
 
 import frenchchic.controleur.ChampLivraisonInvalideException;
+import frenchchic.controleur.PanierExpireException;
 import frenchchic.controleur.SessionPasserCommande;
 import frenchchic.controleur.SessionPasserCommande.ResultatConfirmation;
 import frenchchic.metier.StockInsuffisantException;
@@ -214,6 +215,9 @@ public class EcranLivraisonPaiement extends JPanel {
                         ex.getMessage(),
                         "Stock insuffisant",
                         JOptionPane.WARNING_MESSAGE);
+
+            } catch (PanierExpireException ex) {
+                fenetre.signalerPanierExpire(ex.getMessage());
             }
         });
     }

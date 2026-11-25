@@ -6,6 +6,7 @@ import javax.swing.SwingUtilities;
 import frenchchic.controleur.SessionPasserCommande;
 import frenchchic.metier.persistance.DepotCommandes;
 import frenchchic.metier.persistance.DepotProduits;
+import frenchchic.metier.persistance.DepotReservations;
 import frenchchic.metier.persistance.PersistanceException;
 import frenchchic.vue.FenetreFrenchChic;
 
@@ -35,7 +36,8 @@ public class Main {
             System.exit(1);
         }
 
-        SessionPasserCommande session = new SessionPasserCommande(depotProduits, depotCommandes);
+        SessionPasserCommande session = new SessionPasserCommande(
+                depotProduits, depotCommandes, new DepotReservations());
 
         // Swing doit être manipulé depuis le thread d'événements (EDT).
         SwingUtilities.invokeLater(() -> new FenetreFrenchChic(session).setVisible(true));

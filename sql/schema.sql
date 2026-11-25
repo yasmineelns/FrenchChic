@@ -35,6 +35,17 @@ CREATE TABLE IF NOT EXISTS ligne_commande (
     PRIMARY KEY (numero_transaction, numero_ligne)
 );
 
+-- Réservations du stock par les paniers en cours (RG4 modifiée : un panier
+-- réserve ses articles pendant 15 minutes). Une réservation dont l'heure
+-- d'expiration est passée ne compte plus : le stock est de nouveau en vente.
+CREATE TABLE IF NOT EXISTS reservation (
+    id_session          VARCHAR(36)   NOT NULL,             -- un panier = une session
+    reference_produit   VARCHAR(20)   NOT NULL REFERENCES produit (reference),
+    quantite            INTEGER       NOT NULL CHECK (quantite > 0),
+    expire_le           TIMESTAMP     NOT NULL,
+    PRIMARY KEY (id_session, reference_produit)
+);
+
 -- La base elle-même interdit de modifier ou de supprimer une commande.
 CREATE OR REPLACE FUNCTION interdire_modification_commande() RETURNS trigger AS $$
 BEGIN

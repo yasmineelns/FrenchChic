@@ -17,6 +17,9 @@ public class FenetreFrenchChic extends JFrame {
     private final EcranLivraisonPaiement ecranLivraison;
     private final EcranConfirmation      ecranConfirmation;
 
+    /** Bandeau « Panier réservé encore mm:ss », mis à jour chaque seconde. */
+    private final JLabel chronoLabel = new JLabel(" ", SwingConstants.CENTER);
+
     public FenetreFrenchChic(SessionPasserCommande session) {
         this.session    = session;
         this.cardLayout = new CardLayout();
@@ -36,7 +39,17 @@ public class FenetreFrenchChic extends JFrame {
         conteneur.add(ecranLivraison,    "livraison");
         conteneur.add(ecranConfirmation, "confirmation");
 
-        add(conteneur);
+        add(conteneur, BorderLayout.CENTER);
+
+        // Chrono de réservation du panier, visible sur tous les écrans
+        chronoLabel.setOpaque(true);
+        chronoLabel.setBackground(new Color(255, 243, 205));
+        chronoLabel.setForeground(new Color(120, 80, 0));
+        chronoLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        chronoLabel.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        chronoLabel.setVisible(false);
+        add(chronoLabel, BorderLayout.SOUTH);
+        new javax.swing.Timer(1000, e -> mettreAJourChrono()).start();
         setPreferredSize(new Dimension(520, 620));
         pack();
         setMinimumSize(new Dimension(480, 560));
@@ -56,6 +69,36 @@ public class FenetreFrenchChic extends JFrame {
     public void afficherEcranLivraison() {
         ecranLivraison.rafraichir();
         cardLayout.show(conteneur, "livraison");
+    }
+
+    /**
+     * Appelé chaque seconde : affiche le temps de réservation restant et,
+     * à zéro, vide le panier, remet les articles en vente et prévient le client.
+     */
+    private void mettreAJourChrono() {
+        if (session.panierExpire()) {
+            session.expirerPanier();
+            chronoLabel.setVisible(false);
+            JOptionPane.showMessageDialog(this,
+                    "Votre panier a expiré : il était réservé "
+                            + session.getDureeReservation().toMinutes() + " minutes.\n"
+                            + "Les articles ont été remis en vente.",
+                    "Panier expiré", JOptionPane.INFORMATION_MESSAGE);
+            afficherEcranAccueil();
+            return;
+        }
+        long s = session.secondesRestantes();
+        chronoLabel.setVisible(s >= 0);
+        if (s >= 0) {
+            chronoLabel.setText(String.format("⏱ Panier réservé encore %d:%02d", s / 60, s % 60));
+        }
+    }
+
+    /** Affiche un message d'expiration (confirmation refusée) puis le catalogue. */
+    public void signalerPanierExpire(String message) {
+        chronoLabel.setVisible(false);
+        JOptionPane.showMessageDialog(this, message, "Panier expiré", JOptionPane.INFORMATION_MESSAGE);
+        afficherEcranAccueil();
     }
 
     public void afficherEcranConfirmation(ResultatConfirmation resultat) {
