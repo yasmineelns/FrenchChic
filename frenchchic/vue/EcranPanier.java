@@ -3,7 +3,6 @@ package frenchchic.vue;
 import frenchchic.controleur.SessionPasserCommande;
 import frenchchic.controleur.SessionPasserCommande.RecapPanier;
 import frenchchic.metier.LignePanier;
-import frenchchic.metier.StockInsuffisantException;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.util.List;
@@ -223,12 +222,16 @@ public class EcranPanier extends JPanel {
         moinsBouton.addActionListener(e -> {
             int nouvelleQte = ligne.getQuantite() - 1;
             if (nouvelleQte < 1) return;
-            modifierQuantite(ligne, nouvelleQte);
+            session.modifierQuantitePanier(
+                    ligne.getProduit().getReference(), nouvelleQte);
+            rafraichir();
         });
 
         plusBouton.addActionListener(e -> {
             int nouvelleQte = ligne.getQuantite() + 1;
-            modifierQuantite(ligne, nouvelleQte);
+            session.modifierQuantitePanier(
+                    ligne.getProduit().getReference(), nouvelleQte);
+            rafraichir();
         });
 
         supprimerBouton.addActionListener(e -> {
@@ -256,17 +259,6 @@ public class EcranPanier extends JPanel {
         b.setFocusPainted(false);
         b.setBorderPainted(false);
         b.setOpaque(true);
-    }
-
-    /** Change la quantité d'une ligne ; refusé si le stock libre ne suffit pas. */
-    private void modifierQuantite(LignePanier ligne, int nouvelleQte) {
-        try {
-            session.modifierQuantitePanier(ligne.getProduit().getReference(), nouvelleQte);
-        } catch (StockInsuffisantException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(),
-                    "Stock insuffisant", JOptionPane.WARNING_MESSAGE);
-        }
-        rafraichir();
     }
 
     private static void styleBoutonQuantite(JButton b) {

@@ -38,24 +38,6 @@ javac -encoding UTF-8 -d out -cp "lib/*" (Get-ChildItem frenchchic -Recurse -Fil
 java -cp "out;lib/*" frenchchic.Main
 ```
 
-## Réservation du panier (RG4 modifiée)
-
-Dès le premier article ajouté, le panier **réserve ses articles pendant
-15 minutes** : un autre client ne peut pas les acheter. Un chrono s'affiche en
-bas de la fenêtre. À zéro, le panier est vidé, les articles sont remis en vente
-et un message prévient le client ; une confirmation après ce délai est refusée.
-Retirer un article ou vider le panier libère aussi la réservation.
-
-Les réservations sont dans la table `reservation`. Une base créée avant cette
-fonctionnalité doit être mise à jour en relançant `sql/schema.sql` (sans risque
-pour les données existantes).
-
-Pour une démonstration, la durée peut être réduite :
-
-```powershell
-java "-Dfrenchchic.reservation.minutes=1" -cp "out;lib/*" frenchchic.Main
-```
-
 ## Tests
 
 Lot 1 — couche métier, sans base de données :
@@ -93,9 +75,9 @@ Architecture en trois couches (Vue / Contrôleur / Métier), plus la persistance
 |------------------------------------|----------------------------------------------------------------|---------------------------------------------------|
 | `frenchchic`                       | `Main`                                                         | Crée les dépôts, la session et la fenêtre         |
 | `frenchchic.vue`                   | `FenetreFrenchChic`, `EcranAccueil`, `EcranPanier`, `EcranLivraisonPaiement`, `EcranConfirmation` | Les 4 écrans et la navigation |
-| `frenchchic.controleur`            | `SessionPasserCommande`, `ValidateurLivraison`, `PanierExpireException` | CU « Passer commande en ligne », réservation du panier |
+| `frenchchic.controleur`            | `SessionPasserCommande`, `ValidateurLivraison`                 | CU « Passer commande en ligne »                   |
 | `frenchchic.metier`                | `Produit`, `Panier`, `LignePanier`, `Commande`, `InfosLivraison`, `GenerateurNumeroTransaction` | Règles métier |
-| `frenchchic.metier.persistance`    | `DepotProduits`, `DepotCommandes`, `DepotReservations`, `ConnexionBD` | Accès JDBC à PostgreSQL                    |
+| `frenchchic.metier.persistance`    | `DepotProduits`, `DepotCommandes`, `ConnexionBD`               | Accès JDBC à PostgreSQL                           |
 
 Choix de conception pour la persistance :
 

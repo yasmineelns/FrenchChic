@@ -6,17 +6,13 @@ import frenchchic.metier.Produit;
 import frenchchic.metier.persistance.ConnexionBD;
 import frenchchic.metier.persistance.DepotCommandes;
 import frenchchic.metier.persistance.DepotProduits;
-import frenchchic.metier.persistance.DepotReservations;
 import frenchchic.metier.persistance.PersistanceException;
-import frenchchic.metier.StockInsuffisantException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +42,6 @@ public class Lot2PersistanceTests {
 
     private static final DepotProduits produits = new DepotProduits();
     private static final DepotCommandes commandes = new DepotCommandes();
-    private static final DepotReservations reservations = new DepotReservations();
 
     interface Test {
         void run() throws Exception;
@@ -77,10 +72,13 @@ public class Lot2PersistanceTests {
         }
     }
 
-    /** TRUNCATE ne déclenche pas les triggers « BEFORE DELETE » : c'est voulu, base de test uniquement. */
+    /**
+     * TRUNCATE ne déclenche pas les triggers « BEFORE DELETE » : c'est voulu, base de test uniquement.
+     * CASCADE vide aussi les éventuelles autres tables liées à produit.
+     */
     private static void viderBase() throws SQLException {
         try (Connection c = ConnexionBD.ouvrir(); Statement st = c.createStatement()) {
-            st.execute("TRUNCATE reservation, ligne_commande, commande, produit");
+            st.execute("TRUNCATE ligne_commande, commande, produit CASCADE");
         }
         produits.enregistrer(new Produit("ROBE-001", "Robe d'été fleurie", 49.90, 12));
         produits.enregistrer(new Produit("SAC-001", "Sac en cuir camel", 89.00, 5));
@@ -285,7 +283,7 @@ public class Lot2PersistanceTests {
         System.out.println("\n--- CONTROLEUR + BASE DE DONNEES ---");
 
         tester("PER-13 : Une commande confirmée met à jour la base", () -> {
-            SessionPasserCommande s = new SessionPasserCommande(produits, commandes, reservations);
+            SessionPasserCommande s = new SessionPasserCommande(produits, commandes);
             s.ajouterAuPanier("ROBE-001", 2);
             s.ajouterAuPanier("ROBE-001", 1);
             s.ajouterAuPanier("SAC-001", 1);
@@ -307,42 +305,6 @@ public class Lot2PersistanceTests {
             verifier(lue != null && lue.getLignes().size() == 2, "Commande en base avec 2 lignes");
             verifierDouble(3 * 49.90 + 2 * 89.00, lue.getTotal(), "Total en base");
             verifier(compter("ligne_commande") == 2, "2 lignes en base");
-            verifier(compter("reservation") == 0, "Les réservations doivent être supprimées après la commande");
-        });
-
-        tester("PER-14 : En base, un panier ne peut pas prendre les articles réservés par un autre", () -> {
-            Instant t = Instant.now();
-            Instant fin = t.plus(Duration.ofMinutes(15));
-            verifier(reservations.reserver("panier-A", "SAC-001", 4, fin, t), "A doit pouvoir réserver 4 sacs");
-            verifier(!reservations.reserver("panier-B", "SAC-001", 2, fin, t), "B ne doit pas pouvoir réserver 2 sacs");
-            verifier(reservations.disponiblePour("panier-B", "SAC-001", t) == 1, "1 sac libre attendu pour B");
-            verifier(reservations.reserver("panier-B", "SAC-001", 1, fin, t), "B doit pouvoir réserver le dernier sac");
-            verifier(reservations.reservationsActives(t).get("SAC-001") == 5, "5 sacs réservés au total");
-            verifier(produits.getProduit("SAC-001").getQuantiteStock() == 5, "Le stock ne doit pas changer");
-        });
-
-        tester("PER-15 : En base, une réservation expirée ne bloque plus le stock", () -> {
-            Instant t = Instant.now();
-            reservations.reserver("panier-A", "SAC-001", 5, t.plus(Duration.ofMinutes(15)), t);
-            Instant apres = t.plus(Duration.ofMinutes(16));
-            verifier(reservations.disponiblePour("panier-B", "SAC-001", apres) == 5, "5 sacs libres après expiration");
-            verifier(reservations.reserver("panier-B", "SAC-001", 5, apres.plus(Duration.ofMinutes(15)), apres),
-                    "B doit pouvoir réserver après l'expiration de A");
-        });
-
-        tester("PER-16 : Deux clients sur la vraie base : le second est bloqué, libéré quand le premier vide", () -> {
-            SessionPasserCommande a = new SessionPasserCommande(produits, commandes, reservations);
-            SessionPasserCommande b = new SessionPasserCommande(produits, commandes, reservations);
-            a.ajouterAuPanier("SAC-001", 4);
-            try {
-                b.ajouterAuPanier("SAC-001", 2);
-                throw new AssertionError("StockInsuffisantException attendue");
-            } catch (StockInsuffisantException attendu) {
-                // 4 sacs sur 5 réservés par A
-            }
-            a.viderPanier();
-            verifier(b.ajouterAuPanier("SAC-001", 5) == 5, "Après le vidage de A, B doit pouvoir prendre les 5 sacs");
-            verifier(compter("reservation") == 1, "Seule la réservation de B doit rester");
         });
     }
 
